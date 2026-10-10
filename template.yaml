@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: WasteTwin AI serverless waste reporting MVP
+Parameters:
+  EnableRekognition:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: Enable optional Amazon Rekognition image labels
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 20
+    MemorySize: 256
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref ReportsTable
+        BUCKET_NAME: !Ref WastePhotosBucket
+        ENABLE_REKOGNITION: !Ref EnableRekognition
+Resources:
+  WasteApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: '$default'
+      CorsConfiguration:
+        AllowOrigins:
+          - '*'
+        AllowHeaders:
+          - content-type
+          - authorization
+        AllowMethods:
+          - GET
+          - POST
+          - PATCH
+          - OPTIONS
+  ReportsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: reportId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: reportId
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+  WastePhotosBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins: ['*']
+            AllowedMethods: [GET, PUT, HEAD]
+            AllowedHeaders: ['*']
+            MaxAge: 3000
+  ReportsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: app.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ReportsTable
+        - S3CrudPolicy:
+            BucketName: !Ref WastePhotosBucket
+        - Statement:
+            - Effect: Allow
+              Action:
+                - rekognition:DetectLabels
+              Resource: '*'
+      Events:
+        ListReports:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref WasteApi
+            Path: /reports
+            Method: GET
+        CreateReport:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref WasteApi
+            Path: /reports
+            Method: POST
+        UploadUrl:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref WasteApi
+            Path: /upload-url
+            Method: POST
+        UpdateReport:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref WasteApi
+            Path: /reports/{reportId}
+            Method: PATCH
+Outputs:
+  ApiUrl:
+    Description: API Gateway base URL
+    Value: !Sub 'https://${WasteApi}.execute-api.${AWS::Region}.amazonaws.com'
+  BucketName:
+    Description: S3 photo bucket
+    Value: !Ref WastePhotosBucket
+  TableName:
+    Description: DynamoDB reports table
+    Value: !Ref ReportsTable

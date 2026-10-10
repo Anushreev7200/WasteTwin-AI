@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>WasteTwin AI | Waste Intelligence</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#"><span class="brand-mark">W</span><span>WasteTwin <b>AI</b><small>COMMUNITY WASTE INTELLIGENCE</small></span></a>
+    <div class="top-actions"><span id="connectionBadge" class="badge">Checking connection…</span><button class="button ghost" id="refreshBtn">↻ Refresh</button></div>
+  </header>
+  <main class="shell">
+    <section class="hero">
+      <div><p class="eyebrow">WASTE. REPORTED. PRIORITISED. RESOLVED.</p><h1>Cleaner streets start<br>with <span>one report.</span></h1><p class="hero-copy">A community-powered waste monitoring platform that helps teams see problems sooner and act smarter.</p></div>
+      <div class="hero-stat"><span class="stat-icon">♻</span><div><strong id="resolvedRate">—</strong><small>REPORTS RESOLVED</small></div></div>
+    </section>
+    <div id="demoNotice" class="notice hidden">Demo mode is ON — this data is stored in this browser only, not in AWS.</div>
+    <section class="stats">
+      <article class="stat-card"><span class="stat-label">TOTAL REPORTS</span><strong id="totalCount">0</strong><span class="stat-foot">Community submissions</span></article>
+      <article class="stat-card"><span class="stat-label">NEEDS ATTENTION</span><strong id="attentionCount">0</strong><span class="stat-foot">High / critical priority</span></article>
+      <article class="stat-card"><span class="stat-label">IN PROGRESS</span><strong id="progressCount">0</strong><span class="stat-foot">Being handled</span></article>
+      <article class="stat-card"><span class="stat-label">RESOLVED</span><strong id="resolvedCount">0</strong><span class="stat-foot">Marked complete</span></article>
+    </section>
+    <section class="content-grid">
+      <section class="panel form-panel">
+        <div class="panel-heading"><div><p class="eyebrow">COMMUNITY ACTION</p><h2>Report waste</h2></div><span class="step">01 / SUBMIT</span></div>
+        <form id="reportForm">
+          <label>Report title<input name="title" maxlength="120" placeholder="e.g. Overflowing waste near bus stop" required></label>
+          <div class="two-col">
+            <label>Waste category<select name="category" required><option value="Household waste">Household waste</option><option value="Plastic">Plastic</option><option value="Construction debris">Construction debris</option><option value="Illegal dumping">Illegal dumping</option><option value="Hazardous">Hazardous</option><option value="E-waste">E-waste</option><option value="Other">Other</option></select></label>
+            <label>Severity<select name="severity" required><option>Low</option><option selected>Medium</option><option>High</option><option>Critical</option></select></label>
+          </div>
+          <label>Describe the issue<textarea name="description" rows="3" maxlength="1200" placeholder="What is happening? Is it blocking a path or near a waterway?" required></textarea></label>
+          <label>Location / landmark<input name="location" placeholder="Street, landmark, area" required></label>
+          <div class="two-col">
+            <label>Latitude <span class="optional">optional</span><input name="latitude" type="number" step="any" min="-90" max="90" placeholder="11.0168"></label>
+            <label>Longitude <span class="optional">optional</span><input name="longitude" type="number" step="any" min="-180" max="180" placeholder="76.9558"></label>
+          </div>
+          <label class="upload-box"><span class="upload-icon">＋</span><span><b>Attach a waste photo</b><small>JPG, PNG or WebP · optional</small></span><input id="photoInput" type="file" accept="image/*"><span id="photoName" class="photo-name">Choose file</span></label>
+          <button class="button primary full" id="submitBtn" type="submit">Submit waste report <span>→</span></button>
+          <p class="form-note">Please do not include people’s faces or private information in uploaded photos.</p>
+          <p id="formMessage" class="message" role="status"></p>
+        </form>
+      </section>
+      <section class="panel map-panel">
+        <div class="panel-heading"><div><p class="eyebrow">LIVE OVERVIEW</p><h2>Report map</h2></div><span class="map-key"><i></i> Report location</span></div>
+        <div id="map"></div>
+        <div class="map-foot"><span>⌖ Pins show reports with coordinates</span><span id="mappedCount">0 mapped</span></div>
+      </section>
+    </section>
+    <section class="panel reports-panel">
+      <div class="panel-heading reports-heading"><div><p class="eyebrow">FIELD OPERATIONS</p><h2>Recent reports</h2></div><div class="filters"><input id="searchInput" placeholder="Search reports…" aria-label="Search reports"><select id="statusFilter" aria-label="Filter by status"><option value="All">All statuses</option><option>Reported</option><option>Pending Verification</option><option>In Progress</option><option>Resolved</option></select></div></div>
+      <div class="table-wrap"><table><thead><tr><th>REPORT</th><th>CATEGORY</th><th>PRIORITY</th><th>LOCATION</th><th>STATUS</th><th>UPDATE STATUS</th></tr></thead><tbody id="reportsBody"><tr><td colspan="6" class="empty">Loading reports…</td></tr></tbody></table></div>
+      <p class="table-note">Priority is a transparent rule-based score using severity, report age and category. Optional image labels are informational only.</p>
+    </section>
+    <footer><span>WasteTwin AI <b>·</b> Hackathon MVP</span><span>Built for cleaner, more accountable communities.</span></footer>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
